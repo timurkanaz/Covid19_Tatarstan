@@ -1,3 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 Maps/* linguist-vendored
+*.py linguist-detectable=true
+*.ipynb linguist-detectable=true
