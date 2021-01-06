@@ -4,10 +4,10 @@ import pandas as pd
 import re
 import folium
 import geopandas as gpd
-from datetime import datetime as dt
-import datetime
+from datetime import datetime as dt,date,timedelta
 import numpy as np
 from branca.element import Template, MacroElement
+import sqlalchemy
 
 
 def mapping(covid_data):
@@ -149,8 +149,8 @@ def mapping(covid_data):
         s.write('<?php include_once("Maps/index_{}.html"); ?>'.format(dt.now().strftime("%d.%m.%Y")))
 
 
-def updating_tatinform(href):
-    covid_prev_data=pd.read_excel(r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx".format((dt.now()-datetime.timedelta(days=1)).strftime("%d.%m.%Y")))
+def update_tatinform(href):
+    covid_prev_data=pd.read_excel(r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx".format((dt.now()-timedelta(days=1)).strftime("%d.%m.%Y")))
     covid_prev_data["Прирост"]=0
     raw_data=r.get(href).text.replace("<br/>"," ")
     soup=BeautifulSoup(raw_data,"lxml")
@@ -170,8 +170,11 @@ def updating_tatinform(href):
         covid_prev_data.loc[val,"Прирост"]+=cases[ind]
     covid_prev_data.reset_index(inplace=True)
     print(covid_prev_data["Прирост"].sum())
-    covid_prev_data[["Район","Случаи"]].to_excel(r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx".format(dt.now().strftime("%d.%m.%Y")),index=False)
-    covid_prev_data[["Район","Случаи"]].to_excel(r"C:\Users\timna\OneDrive\Документы\Covid19_Tatarstan\Data\Covid19_{}.xlsx".format(dt.now().strftime("%d.%m.%Y")),index=False)
+    covid_prev_data[["Район","Случаи"]].to_excel(
+        r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx".format(dt.now().strftime("%d.%m.%Y")),index=False)
+    covid_prev_data[["Район","Случаи"]].to_excel(
+        r"C:\Users\timna\OneDrive\Документы\Covid19_Tatarstan\Data\Covid19_{}.xlsx".format(dt.now().strftime("%d.%m.%Y")),index=False)   
+                           
     return covid_prev_data
 
 
@@ -180,8 +183,8 @@ def updating_tatinform(href):
 
 
 #Для вестника камаза
-def updating_kamaz(href):
-    covid_prev_data=pd.read_excel(r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx".format((dt.now()-datetime.timedelta(days=1)).strftime("%d.%m.%Y")))
+def update_kamaz(href):
+    covid_prev_data=pd.read_excel(r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx".format((dt.now()-timedelta(days=1)).strftime("%d.%m.%Y")))
     #print(covid_prev_data.values)
     covid_prev_data["Прирост"]=0
     raw_data=r.get(href).text
@@ -202,17 +205,19 @@ def updating_kamaz(href):
         covid_prev_data.loc[val,"Прирост"]+=cases[ind]
     covid_prev_data.reset_index(inplace=True)
     print(covid_prev_data["Прирост"].sum())
-    covid_prev_data[["Район","Случаи"]].to_excel(r"C:\Users\timna\OneDrive\Документы\Covid19_Tatarstan\Data\Covid19_{}.xlsx".format(dt.now().strftime("%d.%m.%Y")),index=False)
-    covid_prev_data[["Район","Случаи"]].to_excel(r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx".format(dt.now().strftime("%d.%m.%Y")),index=False)
+    covid_prev_data[["Район","Случаи"]].to_excel(
+        r"C:\Users\timna\OneDrive\Документы\Covid19_Tatarstan\Data\Covid19_{}.xlsx".format(dt.now().strftime("%d.%m.%Y")),index=False)
+    covid_prev_data[["Район","Случаи"]].to_excel(
+        r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx".format(dt.now().strftime("%d.%m.%Y")),index=False)
     return covid_prev_data
 
-def updating_database():
+def update_database():
     conn=sqlalchemy.create_engine('mysql://root:1806@localhost:3306/covid_tatarstan?charset=utf8mb4')
     metadata=sqlalchemy.MetaData()
     stats=sqlalchemy.Table("statistics",metadata,autoload=True,autoload_with=conn)
     vals=[]
     excel=pd.read_excel(r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx".format(dt.now().strftime("%d.%m.%Y")))
-    i=((date(dt.now().year,dt.now().month,dt.now().day)-date(2020,12,17)).days+1)*45+1
+    i=(date(dt.now().year,dt.now().month,dt.now().day)-date(2020,12,17)).days*45
     for val in excel.itertuples():
         dic={}
         i=i+1
@@ -224,7 +229,7 @@ def updating_database():
         dic["ID"]=i
         dic["District"]=distr
         dic["Cases"]=cases
-        dic["Date"]=lfdb[ind]
+        dic["Date"]=dt.now().strftime("%Y.%m.%d")
         vals.append(dic)
     ins=sqlalchemy.insert(stats)
     conn.execute(ins,vals)
