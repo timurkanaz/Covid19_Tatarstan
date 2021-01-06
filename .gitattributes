@@ -1,3 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 Maps/* linguist-vendored
+*.php linguist-detectable=false
+*.md linguist-detectable=false
+.gitattributes linguist-detectable=false
