@@ -10,6 +10,17 @@ from branca.element import Template, MacroElement
 import sqlalchemy
 
 
+def add_overhidden():
+    with open("C:/Users/timna/Covid_WebSite/Maps/index_{}.html".format(dt.now().strftime("%d.%m.%Y"))) as f:
+        new_text=f.read().replace("<body>","<body style=overflow-y:hidden>")
+    with open("C:/Users/timna/Covid_WebSite/Maps/index_{}.html".format(dt.now().strftime("%d.%m.%Y")), "w") as f:
+        f.write(new_text)
+    with open("C:/Users/timna/OneDrive/Документы/Covid19_Tatarstan/Maps/index_{}.html".format(dt.now().strftime("%d.%m.%Y"))) as f:
+        new_text=f.read().replace("<body>","<body style=overflow-y:hidden>")
+    with open("C:/Users/timna/OneDrive/Документы/Covid19_Tatarstan/Maps/index_{}.html".format(dt.now().strftime("%d.%m.%Y")), "w") as f:
+        f.write(new_text)
+
+
 def mapping(covid_data):
     geo_data=gpd.read_file(r"C:\Users\timna\Russia_geojson_OSM\GeoJson's\Regions\PFO\Республика Татарстан_Tatarstan.geojson")
     covid_data["Район"]=[i+" район" if i not in ["Казань","Набережные Челны"] else "городской округ "+i for i in covid_data["Район"]]
@@ -20,7 +31,7 @@ def mapping(covid_data):
                 min_zoom=7,
                dragging=True,
             tiles='CartoDB positron')
-    q=list(np.quantile(final_data["Случаи"],[0.25,0.5,0.75,0.98]))
+    q=list(np.quantile(final_data["Случаи"],[0.25,0.5,0.75,0.95]))
     palette=[]
     for val in final_data.itertuples():
         if val[-2]<q[0]:
@@ -40,7 +51,7 @@ def mapping(covid_data):
     final_data["Случаи"]="Случаев:"+"<b>"+final_data["Случаи"].astype("str")+"</b>"
     folium.GeoJson(final_data[["district","geometry","Случаи","Прирост","Color"]].to_json(),style_function=lambda x: {'fillColor':x["properties"]["Color"],
                                                          'fillOpacity': 0.7, 'opacity': 0.7},
-                           highlight_function=lambda x: {"fillOpacity": 0.3, "opacity": 0.3},
+                           highlight_function=lambda x: {"fillOpacity": 0.3, "opacity": 0.3},zoom_on_click=False,
                            tooltip=folium.features.GeoJsonTooltip(fields=["district","Случаи","Прирост"],aliases=["","",""],style=("background-color:FFFFCC;color:black;font-family:Cambria; font-size:16px; padding: 10px;"))).add_to(m)
 
     a = """
@@ -139,7 +150,11 @@ def mapping(covid_data):
     macro._template = Template(a + b + z)
     m.add_child(macro)
     title_html = '''
-             <h3 align="center" style="font-size:16px"><b>Карта распространения коронавируса в Республике Татарстан на {}</b></h3>
+             <h3 align="center" style="font-size:16px">
+             <b>Карта распространения коронавируса в Республике Татарстан на {}</b> <br/>
+             <a target="_blank" rel="noopener noreferrer" href="https://dashboardcovid19forsite.herokuapp.com/"> 
+             Графики выявленных случаев </a>
+             </h3>
              '''.format(dt.now().strftime("%d.%m.%Y"))
     m.get_root().html.add_child(folium.Element(title_html))
     m.save("C:/Users/timna/Covid_WebSite/Maps/index_{}.html".format(dt.now().strftime("%d.%m.%Y")))
@@ -147,6 +162,7 @@ def mapping(covid_data):
     open(r"C:\Users\timna\OneDrive\Документы\Covid19_Tatarstan\index.php","w").close()
     with open(r"C:\Users\timna\OneDrive\Документы\Covid19_Tatarstan\index.php","w") as s:
         s.write('<?php include_once("Maps/index_{}.html"); ?>'.format(dt.now().strftime("%d.%m.%Y")))
+    add_overhidden()
 
 
 def update_tatinform(href):
