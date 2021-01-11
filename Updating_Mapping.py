@@ -25,12 +25,13 @@ def mapping(covid_data):
     geo_data=gpd.read_file(r"C:\Users\timna\Russia_geojson_OSM\GeoJson's\Regions\PFO\Республика Татарстан_Tatarstan.geojson")
     covid_data["Район"]=[i+" район" if i not in ["Казань","Набережные Челны"] else "городской округ "+i for i in covid_data["Район"]]
     final_data=geo_data.merge(covid_data,right_on='Район',left_on='district')[["district","geometry","Случаи","Прирост"]]
-    m=folium.Map([55.4152363,50.8576256],zoom_start=7,zoom_control=False,
+    m=folium.Map([55.257670, 51.355722],zoom_start=7,zoom_control=False,
                scrollWheelZoom=False,
                 max_zoom=7,
                 min_zoom=7,
-               dragging=True,
-            tiles='CartoDB positron')
+               dragging=False,
+               double_click_zoom=False,
+               tiles='CartoDB positron')
     q=list(np.quantile(final_data["Случаи"],[0.25,0.5,0.75,0.95]))
     palette=[]
     for val in final_data.itertuples():
