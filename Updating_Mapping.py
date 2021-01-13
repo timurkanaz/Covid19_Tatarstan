@@ -10,14 +10,22 @@ from branca.element import Template, MacroElement
 import sqlalchemy
 
 
+DATA_PATH=r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx"
+DATA_GPATH=r"C:\Users\timna\OneDrive\Документы\Covid19_Tatarstan\Data\Covid19_{}.xlsx"
+
+MAP_PATH=r"C:/Users/timna/Covid_WebSite/Maps/index_{}.html"
+MAP_GPATH=r"C:/Users/timna/OneDrive/Документы/Covid19_Tatarstan/Maps/index_{}.html"
+
+PHP_PATH=r"C:\Users\timna\OneDrive\Документы\Covid19_Tatarstan\index.php"
+
 def add_overhidden():
-    with open("C:/Users/timna/Covid_WebSite/Maps/index_{}.html".format(dt.now().strftime("%d.%m.%Y"))) as f:
+    with open(MAP_PATH.format(dt.now().strftime("%d.%m.%Y"))) as f:
         new_text=f.read().replace("<body>","<body style=overflow-y:hidden>")
-    with open("C:/Users/timna/Covid_WebSite/Maps/index_{}.html".format(dt.now().strftime("%d.%m.%Y")), "w") as f:
+    with open(MAP_PATH.format(dt.now().strftime("%d.%m.%Y")), "w") as f:
         f.write(new_text)
-    with open("C:/Users/timna/OneDrive/Документы/Covid19_Tatarstan/Maps/index_{}.html".format(dt.now().strftime("%d.%m.%Y"))) as f:
+    with open(MAP_GPATH.format(dt.now().strftime("%d.%m.%Y"))) as f:
         new_text=f.read().replace("<body>","<body style=overflow-y:hidden>")
-    with open("C:/Users/timna/OneDrive/Документы/Covid19_Tatarstan/Maps/index_{}.html".format(dt.now().strftime("%d.%m.%Y")), "w") as f:
+    with open(MAP_GPATH.format(dt.now().strftime("%d.%m.%Y")), "w") as f:
         f.write(new_text)
 
 
@@ -31,7 +39,8 @@ def mapping(covid_data):
                 min_zoom=7,
                dragging=False,
                double_click_zoom=False,
-               tiles='CartoDB positron')
+               tiles="https://{s}.tile.jawg.io/jawg-light/{z}/{x}/{y}{r}.png?access-token=LvQFAfvNKy1k8ZdbZbh1nZthL9k4YukhhC9kJX5f2wOby0fMzVn3osslwu8vkGoy",attr='<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank" class="jawg-attrib">&copy; <b>Jawg</b>Maps</a> | <a href="https://www.openstreetmap.org/copyright" title="OpenStreetMap is open data licensed under ODbL" target="_blank" class="osm-attrib">&copy; OSM contributors</a>')
+              
     q=list(np.quantile(final_data["Случаи"],[0.25,0.5,0.75,0.95]))
     palette=[]
     for val in final_data.itertuples():
@@ -158,16 +167,16 @@ def mapping(covid_data):
              </h3>
              '''.format(dt.now().strftime("%d.%m.%Y"))
     m.get_root().html.add_child(folium.Element(title_html))
-    m.save("C:/Users/timna/Covid_WebSite/Maps/index_{}.html".format(dt.now().strftime("%d.%m.%Y")))
-    m.save("C:/Users/timna/OneDrive/Документы/Covid19_Tatarstan/Maps/index_{}.html".format(dt.now().strftime("%d.%m.%Y")))
-    open(r"C:\Users\timna\OneDrive\Документы\Covid19_Tatarstan\index.php","w").close()
-    with open(r"C:\Users\timna\OneDrive\Документы\Covid19_Tatarstan\index.php","w") as s:
+    m.save(MAP_PATH.format(dt.now().strftime("%d.%m.%Y")))
+    m.save(MAP_GPATH.format(dt.now().strftime("%d.%m.%Y")))
+    open(PHP_PATH,"w").close()
+    with open(PHP_PATH,"w") as s:
         s.write('<?php include_once("Maps/index_{}.html"); ?>'.format(dt.now().strftime("%d.%m.%Y")))
     add_overhidden()
 
 
 def update_tatinform(href):
-    covid_prev_data=pd.read_excel(r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx".format((dt.now()-timedelta(days=1)).strftime("%d.%m.%Y")))
+    covid_prev_data=pd.read_excel(DATA_PATH.format((dt.now()-timedelta(days=1)).strftime("%d.%m.%Y")))
     covid_prev_data["Прирост"]=0
     raw_data=r.get(href).text.replace("<br/>"," ")
     soup=BeautifulSoup(raw_data,"lxml")
@@ -188,9 +197,9 @@ def update_tatinform(href):
     covid_prev_data.reset_index(inplace=True)
     print(covid_prev_data["Прирост"].sum())
     covid_prev_data[["Район","Случаи"]].to_excel(
-        r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx".format(dt.now().strftime("%d.%m.%Y")),index=False)
+        DATA_PATH.format(dt.now().strftime("%d.%m.%Y")),index=False)
     covid_prev_data[["Район","Случаи"]].to_excel(
-        r"C:\Users\timna\OneDrive\Документы\Covid19_Tatarstan\Data\Covid19_{}.xlsx".format(dt.now().strftime("%d.%m.%Y")),index=False)   
+        DATA_GPATH.format(dt.now().strftime("%d.%m.%Y")),index=False)   
                            
     return covid_prev_data
 
@@ -201,7 +210,7 @@ def update_tatinform(href):
 
 #Для вестника камаза
 def update_kamaz(href):
-    covid_prev_data=pd.read_excel(r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx".format((dt.now()-timedelta(days=1)).strftime("%d.%m.%Y")))
+    covid_prev_data=pd.read_excel(DATA_PATH.format((dt.now()-timedelta(days=1)).strftime("%d.%m.%Y")))
     #print(covid_prev_data.values)
     covid_prev_data["Прирост"]=0
     raw_data=r.get(href).text
@@ -223,9 +232,9 @@ def update_kamaz(href):
     covid_prev_data.reset_index(inplace=True)
     print(covid_prev_data["Прирост"].sum())
     covid_prev_data[["Район","Случаи"]].to_excel(
-        r"C:\Users\timna\OneDrive\Документы\Covid19_Tatarstan\Data\Covid19_{}.xlsx".format(dt.now().strftime("%d.%m.%Y")),index=False)
+        DATA_GPATH.format(dt.now().strftime("%d.%m.%Y")),index=False)
     covid_prev_data[["Район","Случаи"]].to_excel(
-        r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx".format(dt.now().strftime("%d.%m.%Y")),index=False)
+        DATA_PATH.format(dt.now().strftime("%d.%m.%Y")),index=False)
     return covid_prev_data
 
 def update_database():
@@ -233,7 +242,7 @@ def update_database():
     metadata=sqlalchemy.MetaData()
     stats=sqlalchemy.Table("statistics",metadata,autoload=True,autoload_with=conn)
     vals=[]
-    excel=pd.read_excel(r"C:\Users\timna\Covid_WebSite\Data\Covid19_{}.xlsx".format(dt.now().strftime("%d.%m.%Y")))
+    excel=pd.read_excel(DATA_PATH.format(dt.now().strftime("%d.%m.%Y")))
     i=(date(dt.now().year,dt.now().month,dt.now().day)-date(2020,12,17)).days*45
     for val in excel.itertuples():
         dic={}
