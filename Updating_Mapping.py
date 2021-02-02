@@ -182,8 +182,16 @@ def update_tatinform(href):
     soup=BeautifulSoup(raw_data,"lxml")
     stats=soup.find_all("div",{"class":"pi_text"})[0].text.split("География")[1]
     stats=re.findall(r"[А-Я]+[а-я]{2,}\s?–?\s?\d{1,}",stats)
-    regs=[re.search(r"([А-Я]+[а-я]{2,})\s–?\s?\d{1,}",i).group(1) for i in stats]
-    cases=[int(re.search(r"[А-Я]+[а-я]{2,}\s–?\s?(\d{1,})",i).group(1)) for i in stats]
+    regs=[]
+    cases=[]
+    for stat in stats:
+        try:
+            reg=re.search(r"([а-яА-Я]*)\s[-–]\s?\d{1,}",stat).group(1)
+            case=int(re.search(r"[а-яА-Я]*\s[-–]\s?(\d{1,})",stat).group(1))
+            regs.append(reg)
+            cases.append(case)
+        except:
+            pass
     covid_prev_data.set_index("Район",inplace=True)
     for ind,val in enumerate(regs):
         if val=="Челны":
@@ -217,8 +225,16 @@ def update_kamaz(href):
     soup=BeautifulSoup(raw_data,"lxml")
     stats=soup.find_all("p")[0].text.split(":")[1]
     stats=re.findall(r"[а-яА-Я]*\s?[-–]\s?\d{1,}",stats)
-    regs=[re.search(r"([а-яА-Я]*)\s[-–]\s?\d{1,}",i).group(1) for i in stats]
-    cases=[int(re.search(r"[а-яА-Я]*\s[-–]\s?(\d{1,})",i).group(1)) for i in stats]
+    regs=[]
+    cases=[]
+    for stat in stats:
+        try:
+            reg=re.search(r"([а-яА-Я]*)\s[-–]\s?\d{1,}",stat).group(1)
+            case=int(re.search(r"[а-яА-Я]*\s[-–]\s?(\d{1,})",stat).group(1))
+            regs.append(reg)
+            cases.append(case)
+        except:
+            pass
     covid_prev_data.set_index("Район",inplace=True)
     for ind,val in enumerate(regs):
         if val=="Челны":
